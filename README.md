@@ -30,11 +30,24 @@
 
 <div align="center">
 
-<img src="./docs/images/panel-overview.png" alt="人设控制台面板：当前激活人设、双形象切换、三张角色卡与会话负载" width="780" />
+<table align="center">
+  <tr>
+    <th align="center" width="50%">单人激活（推荐用法）</th>
+    <th align="center" width="50%">三人同时激活（冲突提醒）</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./docs/images/panel-overview.png" alt="人设控制台：当前激活小鲸鱼，图鉴显示哈基米/小克/小鲸鱼三张卡" width="360" />
+    </td>
+    <td align="center">
+      <img src="./docs/images/panel-multi-active.png" alt="人设控制台：三个人设同时激活并给出冲突提醒" width="360" />
+    </td>
+  </tr>
+</table>
 
 </div>
 
-> 上图为浅色主题下的面板结构与信息分区示意（三个内置人设：哈基米 / 小克 / 小鲸鱼）。
+> 两张图为**浅色主题下的面板结构示意**，按右侧栏 548px 内容宽度绘制；内置三人设为哈基米 / 小克 / 小鲸鱼。
 
 面板自上而下包含：
 
