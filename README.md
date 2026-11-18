@@ -140,10 +140,13 @@
 
 ```powershell
 # 桌面应用（profile 名为 desktop；`dsh web` 则为 web）
-dsh plugin --profile desktop add --allow-build=dsh-persona-hub github:liqiming-whu/dsh-persona-hub --trust-lockfile
+# 推荐：直接安装 Release 附件（无需在目标机构建）
+dsh plugin --profile desktop add https://github.com/liqiming-whu/dsh-persona-hub/releases/download/v1.5.6/dsh-persona-hub-1.5.6.tgz --trust-lockfile
 ```
 
-`--allow-build` 允许 Git 源码包执行 `prepare` 构建脚本（把 TypeScript 编译到 `lib/`）；`--trust-lockfile` 跳过 lockfile 供应链校验，新发布不足 24 小时的版本可能触发 pnpm 的 `minimumReleaseAge` 拦截，不接受该选项时可去掉。
+`--trust-lockfile` 跳过 lockfile 供应链校验，新发布不足 24 小时的版本可能触发 pnpm 的 `minimumReleaseAge` 拦截，不接受该选项时可去掉。
+
+> 也可以从源码安装 `github:liqiming-whu/dsh-persona-hub`，但 pnpm 默认禁止 git 依赖执行构建脚本，需要先在 profile 的 `pnpm-workspace.yaml` 里为该 commit 的完整 key 打开 `allowBuilds`（key 含 commit sha，每次升级都要改），因此推荐上面的 Release 附件方式。
 
 或先本地打包再安装（产物与 Release 附件同源）：
 
