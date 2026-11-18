@@ -32,22 +32,26 @@
 
 <table align="center">
   <tr>
-    <th align="center" width="50%">单人激活（推荐用法）</th>
-    <th align="center" width="50%">三人同时激活（冲突提醒）</th>
+    <th align="center" width="33%">🐋 小鲸鱼（当前激活）</th>
+    <th align="center" width="33%">🐱 哈基米（图鉴预览）</th>
+    <th align="center" width="33%">☕ 小克（图鉴预览）</th>
   </tr>
   <tr>
     <td align="center">
-      <img src="./docs/images/panel-overview.png" alt="人设控制台：当前激活小鲸鱼，图鉴显示哈基米/小克/小鲸鱼三张卡" width="360" />
+      <img src="./docs/images/panel-xiaojingyu.png" alt="小鲸鱼面板：完整激活状态" width="220" />
     </td>
     <td align="center">
-      <img src="./docs/images/panel-multi-active.png" alt="人设控制台：三个人设同时激活并给出冲突提醒" width="360" />
+      <img src="./docs/images/panel-hajimi.png" alt="哈基米面板：图鉴预览状态" width="220" />
+    </td>
+    <td align="center">
+      <img src="./docs/images/panel-xiaoke.png" alt="小克面板：图鉴预览状态" width="220" />
     </td>
   </tr>
 </table>
 
 </div>
 
-> 两张图为**浅色主题下的面板结构示意**，按右侧栏 548px 内容宽度绘制；内置三人设为哈基米 / 小克 / 小鲸鱼。
+> 以上为右栏面板的真实截图（浅色主题）：小鲸鱼为完整激活态（含「已安装人设图鉴」与会话负载），哈基米与小克为点击卡片后的「预览中（未启用）」态。内置三人设不含其他角色。
 
 面板自上而下包含：
 
