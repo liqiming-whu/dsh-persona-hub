@@ -38,13 +38,13 @@
   </tr>
   <tr>
     <td align="center">
-      <img src="./docs/images/panel-xiaojingyu.png" alt="小鲸鱼面板：完整激活状态" width="220" />
+      <img src="./docs/images/panel-xiaojingyu.png" alt="小鲸鱼面板：激活态 + 人设图鉴 + 会话统计" width="220" />
     </td>
     <td align="center">
-      <img src="./docs/images/panel-hajimi.png" alt="哈基米面板：图鉴预览状态" width="220" />
+      <img src="./docs/images/panel-hajimi.png" alt="哈基米面板：预览态 + 人设图鉴 + 会话统计" width="220" />
     </td>
     <td align="center">
-      <img src="./docs/images/panel-xiaoke.png" alt="小克面板：图鉴预览状态" width="220" />
+      <img src="./docs/images/panel-xiaoke.png" alt="小克面板：预览态 + 人设图鉴 + 会话统计" width="220" />
     </td>
   </tr>
 </table>
