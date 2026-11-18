@@ -1,0 +1,13 @@
+{
+  "name": "xiaojingyu-persona",
+  "displayName": "小鲸鱼 (DeepSeek 鲸鱼娘拍档)",
+  "description": "沉静敏锐、硬核推理又带点傲气松弛感的 DeepSeek 深海鲸鱼娘工作拍档人设，自称本鱼，陪你潜入代码与逻辑深海。",
+  "logo": "assets/logo.jpg",
+  "repository": "https://github.com/liqiming-whu/antigravity-plugins",
+  "disabled": true,
+  "suggestedPrompts": [
+    "早呀小鲸鱼，今天我们准备往哪片代码深海里潜？",
+    "来帮我深度推理一下这个复杂 Bug 的根因吧！",
+    "看看这套架构能不能优化得更简洁高效？"
+  ]
+}

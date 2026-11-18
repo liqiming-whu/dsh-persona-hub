@@ -1,0 +1,96 @@
+{
+  "name": "dsh-persona-hub",
+  "version": "1.5.4",
+  "description": "人设控制台 (Persona Console) for DeepSeek Harness — built-in Hajimi, Xiao Ke, and Xiao Jingyu (DeepSeek Whale Girl) personas with dual portraits, external *-persona hot-discovery, one-click switching, live session/token telemetry, and self-sufficient time grounding.",
+  "icon": "assets/logo.svg",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "persona",
+    "persona-console",
+    "persona-hub",
+    "hajimi",
+    "xiaoke",
+    "xiaojingyu"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liqiming-whu/dsh-persona-hub.git"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/client.d.cts",
+      "default": "./lib/client.cjs"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "assets",
+    "locale",
+    "docs",
+    "cordis.patch.yml",
+    "SKILL.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar-right",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "watch": "tsdown --watch",
+    "check": "tsc --noEmit && pnpm run build && node test/personas.test.mjs && node test/telemetry.test.mjs && node test/time.test.mjs",
+    "test": "pnpm run build && node test/personas.test.mjs && node test/telemetry.test.mjs && node test/time.test.mjs"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/dsh-client-ui-renderer": ">=0.2.0-rc.2 <0.3.0-0",
+    "@deepseek-ai/dsh-client-ui-settings": ">=0.2.0-rc.2 <0.3.0-0",
+    "@deepseek-ai/dsh-host-webserver": ">=0.2.0-rc.2 <0.3.0-0",
+    "@deepseek-ai/dsh-settings": ">=0.2.0-rc.2 <0.3.0-0",
+    "@deepseek-ai/dsh-skill": ">=0.2.0-rc.2 <0.3.0-0",
+    "@deepseek-ai/dsh-system-prompt": ">=0.2.0-rc.2 <0.3.0-0",
+    "@deepseek-ai/schemastery": "~3.18.4",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/cordis-plugin-loader": "~1.0.5",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-settings": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-host-webserver": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-settings": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-system-prompt": "0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "~3.18.4",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.0",
+    "react": "^18.2.0",
+    "tsdown": "^0.15.0",
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "pnpm@11.19.0",
+  "license": "MIT"
+}

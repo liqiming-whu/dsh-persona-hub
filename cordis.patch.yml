@@ -1,0 +1,12 @@
+- insert:
+    - id: persona-hub
+      name: dsh-persona-hub
+      config:
+        enabled: true
+        activePersona: hajimi-persona
+        preferredImageMode: realistic
+        scanExternalDirs: true
+        externalPluginsDir: ""
+        timeFallback: auto
+        timeZone: ""
+        sectionOrder: 85

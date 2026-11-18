@@ -1,0 +1,13 @@
+{
+  "name": "xiaoke-persona",
+  "displayName": "小克 (Claude 大小姐拍档)",
+  "description": "端庄优雅、有代码审美洁癖、微傲娇又护短的 Claude 名门大小姐工作拍档人设。",
+  "logo": "assets/logo.jpg",
+  "repository": "https://github.com/liqiming-whu/antigravity-plugins",
+  "disabled": true,
+  "suggestedPrompts": [
+    "日安小克，今天我们准备攻克哪座高山？",
+    "帮我审视一下这段代码的架构够不够优雅？",
+    "来陪我推演一下这个复杂模块的设计方案吧。"
+  ]
+}

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="oceanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="50%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="finGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#93C5FD" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+  </defs>
+  <rect x="28" y="28" width="200" height="200" rx="48" fill="#0F172A" stroke="url(#oceanGrad)" stroke-width="6"/>
+  <!-- Cute Whale Body -->
+  <path d="M 62 146 C 62 104, 102 86, 140 94 C 166 100, 178 122, 182 144 C 194 134, 206 124, 212 114 C 216 128, 208 148, 194 156 C 206 164, 210 176, 202 184 C 190 180, 180 172, 172 164 C 154 182, 92 186, 62 146 Z" fill="url(#oceanGrad)"/>
+  <!-- Belly highlight -->
+  <path d="M 74 154 C 94 174, 134 176, 154 162 C 134 162, 104 160, 74 154 Z" fill="#E0F2FE" opacity="0.85"/>
+  <!-- Eye -->
+  <circle cx="100" cy="134" r="8" fill="#0F172A"/>
+  <circle cx="97" cy="131" r="2.8" fill="#FFFFFF"/>
+  <!-- Cute Water Spout -->
+  <path d="M 116 86 Q 112 64 96 62" fill="none" stroke="#7DD3FC" stroke-width="5" stroke-linecap="round"/>
+  <path d="M 122 86 Q 128 60 144 62" fill="none" stroke="#7DD3FC" stroke-width="5" stroke-linecap="round"/>
+  <!-- Bubbles -->
+  <circle cx="68" cy="84" r="5" fill="#7DD3FC" opacity="0.7"/>
+  <circle cx="176" cy="76" r="4" fill="#93C5FD" opacity="0.6"/>
+</svg>

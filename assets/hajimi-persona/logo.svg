@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="geminiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4FACFE" />
+      <stop offset="50%" stop-color="#8E54E9" />
+      <stop offset="100%" stop-color="#FF6B9D" />
+    </linearGradient>
+    <linearGradient id="earInner" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF9EBB" />
+      <stop offset="100%" stop-color="#FF6B9D" />
+    </linearGradient>
+  </defs>
+  <!-- Background Badge with 10% margin (26 to 230) -->
+  <rect x="28" y="28" width="200" height="200" rx="48" fill="#181926" stroke="url(#geminiGrad)" stroke-width="6"/>
+  <!-- Left Cat Ear -->
+  <path d="M 58 118 L 52 54 Q 52 46 60 50 L 106 84 Z" fill="url(#geminiGrad)" />
+  <path d="M 64 106 L 60 64 L 94 86 Z" fill="url(#earInner)" />
+  <!-- Right Cat Ear -->
+  <path d="M 198 118 L 204 54 Q 204 46 196 50 L 150 84 Z" fill="url(#geminiGrad)" />
+  <path d="M 192 106 L 196 64 L 162 86 Z" fill="url(#earInner)" />
+  <!-- Cat Face Silhouette -->
+  <ellipse cx="128" cy="138" rx="68" ry="58" fill="#24273A" stroke="url(#geminiGrad)" stroke-width="5"/>
+  <!-- Left Eye (Starry wink/spark) -->
+  <ellipse cx="98" cy="132" rx="11" ry="14" fill="#4FACFE"/>
+  <circle cx="94" cy="126" r="4" fill="#FFFFFF"/>
+  <!-- Right Eye -->
+  <ellipse cx="158" cy="132" rx="11" ry="14" fill="#A770EF"/>
+  <circle cx="154" cy="126" r="4" fill="#FFFFFF"/>
+  <!-- Cute Cat Mouth (:3) -->
+  <path d="M 114 156 Q 121 164 128 156 Q 135 164 142 156" fill="none" stroke="#FF9EBB" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Blush -->
+  <ellipse cx="80" cy="148" rx="8" ry="4" fill="#FF6B9D" opacity="0.6"/>
+  <ellipse cx="176" cy="148" rx="8" ry="4" fill="#FF6B9D" opacity="0.6"/>
+  <!-- Gemini Sparkle on Forehead -->
+  <path d="M 128 92 Q 128 108 144 108 Q 128 108 128 124 Q 128 108 112 108 Q 128 108 128 92 Z" fill="#FFFFFF"/>
+</svg>

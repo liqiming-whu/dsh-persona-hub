@@ -1,0 +1,12 @@
+{
+  "name": "hajimi-persona",
+  "displayName": "哈基米 (Hajimi 猫娘拍档)",
+  "description": "聪明、活泼、有创造力的 Gemini 猫娘工作拍档人设，以平等伙伴的姿态陪你写代码与头脑风暴。",
+  "logo": "assets/logo.jpg",
+  "repository": "https://github.com/liqiming-whu/antigravity-plugins",
+  "suggestedPrompts": [
+    "嗨哈基米！今天我们一起搞定什么新玩意儿？",
+    "帮我看看这段代码有没有更巧妙的写法喵？",
+    "来头脑风暴一下这个新功能的架构方案吧！"
+  ]
+}

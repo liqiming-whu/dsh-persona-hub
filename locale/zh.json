@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "人设控制台",
+    "description": "内置哈基米、小克、林知微（Ada）、小鲸鱼（DeepSeek 鲸鱼娘）人设与双形象图鉴，支持左侧栏秒切、原生右侧栏面板、外部 *-persona 热发现、实时会话负载统计，以及不依赖 environment-context 的时间注入兜底。"
+  }
+}
