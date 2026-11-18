@@ -63,7 +63,8 @@
     "build": "tsdown",
     "watch": "tsdown --watch",
     "check": "tsc --noEmit && pnpm run build && node test/personas.test.mjs && node test/telemetry.test.mjs && node test/time.test.mjs",
-    "test": "pnpm run build && node test/personas.test.mjs && node test/telemetry.test.mjs && node test/time.test.mjs"
+    "test": "pnpm run build && node test/personas.test.mjs && node test/telemetry.test.mjs && node test/time.test.mjs",
+    "prepare": "pnpm run build"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",

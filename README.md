@@ -120,10 +120,12 @@
 
 ```powershell
 # 桌面应用（profile 名为 desktop；`dsh web` 则为 web）
-dsh plugin --profile desktop add github:liqiming-whu/dsh-persona-hub --trust-lockfile
+dsh plugin --profile desktop add --allow-build=dsh-persona-hub github:liqiming-whu/dsh-persona-hub --trust-lockfile
 ```
 
-或先本地打包再安装：
+`--allow-build` 允许 Git 源码包执行 `prepare` 构建脚本（把 TypeScript 编译到 `lib/`）；`--trust-lockfile` 跳过 lockfile 供应链校验，新发布不足 24 小时的版本可能触发 pnpm 的 `minimumReleaseAge` 拦截，不接受该选项时可去掉。
+
+或先本地打包再安装（产物与 Release 附件同源）：
 
 ```bash
 pnpm install
