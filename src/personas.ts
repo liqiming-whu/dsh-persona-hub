@@ -435,9 +435,11 @@ export function localizeAssetPathRefs(markdown: string, assetsDir: string): stri
 export function localizePersonaWording(markdown: string): string {
   return markdown
     .replace(/`GEMINI\.md`/g, 'DSH 全局系统指令')
-    .replace(/`image-generator`\s*子智能体/g, '`codex_image_generate` 工具')
-    .replace(/`image-generator`/g, '`codex_image_generate`')
-    .replace(/image-generator/g, 'codex_image_generate')
+    // Never name a concrete image tool: whatever the session provides is the
+    // right one, and the rules must stay portable across DSH profiles.
+    .replace(/`image-generator`\s*子智能体/g, '当前会话可用的生图能力')
+    .replace(/`image-generator`/g, '当前会话可用的生图能力')
+    .replace(/image-generator/g, '当前会话可用的生图能力')
     .replace(/Customizations/g, 'DSH 人设控制台')
 }
 
@@ -491,10 +493,10 @@ export function rewritePersonaRulesForDsh(
   }
 
   dshAdaptationLines.push(
-    '- **DSH 原生生图调用方式（替代 Antigravity 时代的子智能体生图工具）**：',
-    '  1. 当需要生成角色自拍、生活照或插画时，先调用 `read_image({ file_path: "<上方参考图绝对路径>" })` 读取本地参考图，从返回结果中获取 `attachmentId`（格式为 `sha256:...`）。若该角色同时内置主参考图与辅助参考图，可一并读取两张以强化面部与姿态一致性。',
-    '  2. 随后调用 `codex_image_generate`，将获取到的 `attachmentId` 传入 `referenceImages: [{ attachmentId: "sha256:..." }]`，并在 `prompt` 中详细描述场景、姿态与面部一致性要求。',
-    '  3. 若当前会话未挂载 `codex_image_generate`，也可检查是否有 `arkcli-gen` 技能可用；若均不可用，则按本角色规则中的无生图工具分支自然回应。',
+    '- **DSH 平台生图方式（不绑定具体工具）**：',
+    '  1. 当需要生成角色自拍、生活照或插画时，先用当前会话可用的图像读取能力读取上方参考图，取得该图片在本会话中的引用标识。若该角色同时内置主参考图与辅助参考图，可一并读取两张以强化面部与姿态一致性。',
+    '  2. 再用当前会话可用的生图能力生成，并把取得的参考图引用一并传入，在提示中详细描述场景、姿态与面部一致性要求；不要仅凭文字描述生成。',
+    '  3. 若当前会话没有可用的图像读取或生图能力，则按本角色规则中的「无可用生图工具」分支自然回应，不得声称已经生成。',
   )
 
   if (persona.id === 'linzhiwei-persona') {

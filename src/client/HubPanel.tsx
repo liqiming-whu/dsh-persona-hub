@@ -1236,7 +1236,7 @@ export function HubPanel({
               }}
             >
               <span style={{ fontSize: 12, fontWeight: 700, color: DSH_TOKENS.textPrimary }}>
-                🕒 时间注入（不再硬依赖 dsh-environment-context）
+                🕒 时间注入
               </span>
               <span
                 style={{

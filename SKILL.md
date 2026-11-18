@@ -112,15 +112,18 @@ cp -r "$SRC"/. "$DST"/
 | `` `C:\Users\xxx\.gemini\config\plugins\...\assets\realistic.jpg` `` | `{{REALISTIC_IMAGE_PATH}}` |
 | 九宫格/辅助参考图路径 | `{{SECONDARY_IMAGE_PATH}}` |
 | `` `GEMINI.md` `` / 全局 Antigravity 指令 | `DSH 全局系统指令` 或 `默认系统指令` |
-| `` `image-generator` `` 子智能体 | `` `codex_image_generate` `` 工具 |
+| `` `image-generator` `` 子智能体 | 「当前会话可用的生图能力」（**不要写具体工具名**） |
 | `Customizations` | `DSH 人设控制台` |
 
 生图流程改写为：
 
 ```text
-1. read_image({ file_path: "{{REALISTIC_IMAGE_PATH}}" }) 拿到 attachmentId
-2. codex_image_generate({ referenceImages: [{ attachmentId }], prompt: "..." })
-3. 无生图工具时按角色规则里的“无可用生图工具”分支自然回应
+1. 先用当前会话可用的图像读取能力读取 {{REALISTIC_IMAGE_PATH}}，拿到该图片的会话内引用
+2. 再用当前会话可用的生图能力生成，并把该引用作为参考图一并传入
+3. 没有可用能力时，按角色规则里的“无可用生图工具”分支自然回应
+
+> 提示词里**不要点名任何具体工具**（不写 read_image / codex_image_generate / arkcli-gen 之类），
+> 只描述“先读取参考图、再带着参考图生成”的流程，这样换 profile 或换工具都不需要改人设。
 ```
 
 **不要**写死任何本机路径；占位符由 hub 在每次提示组装时填成本机真实绝对路径。

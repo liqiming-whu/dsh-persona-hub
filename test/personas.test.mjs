@@ -121,7 +121,9 @@ test('localizePersonaWording removes Antigravity-era vocabulary', () => {
   assert.ok(!fixed.includes('image-generator'))
   assert.ok(!fixed.includes('Customizations'))
   assert.ok(fixed.includes('DSH 全局系统指令'))
-  assert.ok(fixed.includes('codex_image_generate'))
+  // Tool names must stay generic: the prompt never pins a concrete image tool.
+  assert.ok(fixed.includes('当前会话可用的生图能力'))
+  assert.ok(!fixed.includes('codex_image_generate'))
 })
 
 test('buildPersonaSystemPrompt rewrites paths and adapts DSH image generation tools', () => {
@@ -132,9 +134,12 @@ test('buildPersonaSystemPrompt rewrites paths and adapts DSH image generation to
   const prompt = buildPersonaSystemPrompt(hajimi, new Date('2026-11-18T05:00:00+08:00'), 4)
   assert.ok(prompt.includes('哈基米（Hajimi）'))
   assert.ok(!prompt.includes('.gemini'))
-  assert.ok(prompt.includes('codex_image_generate'))
-  assert.ok(prompt.includes('read_image'))
-  assert.ok(prompt.includes('"sha256:..."'))
+  // The persona prompt describes the flow without naming any concrete tool.
+  assert.ok(prompt.includes('当前会话可用的生图能力'))
+  assert.ok(prompt.includes('不绑定具体工具'))
+  for (const banned of ['codex_image_generate', 'read_image', 'arkcli-gen', 'image-generator', 'referenceImages']) {
+    assert.ok(!prompt.includes(banned), `prompt must not name ${banned}`)
+  }
   // The shared DSH adaptation block must not advertise a private persona.
   assert.ok(!prompt.includes('林知微'))
 })

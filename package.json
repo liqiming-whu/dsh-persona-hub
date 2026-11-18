@@ -1,6 +1,6 @@
 {
   "name": "dsh-persona-hub",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "description": "人设控制台 (Persona Console) for DeepSeek Harness — built-in Hajimi, Xiao Ke, and Xiao Jingyu (DeepSeek Whale Girl) personas with dual portraits, external *-persona hot-discovery, one-click switching, live session/token telemetry, and self-sufficient time grounding.",
   "icon": "assets/logo.svg",
   "keywords": [

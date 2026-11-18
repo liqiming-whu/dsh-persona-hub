@@ -127,7 +127,7 @@
 
 - **创建**：按 DSH 标准结构生成 `plugin.json`、`AGENTS.md`、`logo.*` 与参考图。
 - **导入**：支持本地目录与 GitHub 仓库（优先 `gh repo clone`，无 `gh` 时回落到 `git clone`，并识别凭据缺失的典型报错）。
-- **移植**：把 Antigravity 时代的 `rules/AGENTS.md`、绝对路径、`image-generator` 等写法改写为 DSH 的占位符 + `read_image` / `codex_image_generate` 链路。
+- **移植**：把 Antigravity 时代的 `rules/AGENTS.md`、绝对路径、子智能体生图写法改写为 DSH 的参考图占位符，并用「当前会话可用的图像读取与生图能力」这类中性说法替代具体工具名。
 - **验证与删除**：给出可执行的校验命令（占位符残留、硬编码路径、图片实体、面板可见性）与安全删除步骤。
 
 详见 [`SKILL.md`](./SKILL.md)。
