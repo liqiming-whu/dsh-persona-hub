@@ -305,10 +305,12 @@ export function discoverPersonas(
   // 2. Scan external *-persona directories if enabled
   if (settings.scanExternalDirs) {
     const home = homedir()
+    // DSH-native locations only. The Antigravity plugin directory is deliberately
+    // NOT scanned: those packages are a different format and belong to Antigravity,
+    // not to this console's roster.
     const externalRoots = [
       settings.externalPluginsDir ? resolve(settings.externalPluginsDir) : null,
       join(home, '.dsh', 'personas'),
-      join(home, '.gemini', 'config', 'plugins'),
     ].filter((p): p is string => Boolean(p))
 
     for (const rootDir of externalRoots) {
