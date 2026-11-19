@@ -108,7 +108,7 @@
 
 ## 🕒 时间注入：不硬依赖 `dsh-environment-context`
 
-角色设定里依赖日期的部分（经期状态、纪念日、“今天几号”这类提问）要求模型始终能看到真实时间，因此本插件自带 `persona-hub-time` 提示词区（order 19），并按 10 秒间隔探测兄弟插件 `dsh-environment-context` 的 `/api/environment-context/snapshot`：
+角色设定里依赖日期的部分（纪念日、“今天几号”这类提问）要求模型始终能看到真实时间，因此本插件自带 `persona-hub-time` 提示词区（order 19），并按 10 秒间隔探测兄弟插件 `dsh-environment-context` 的 `/api/environment-context/snapshot`：
 
 | 场景 | 探测结果 | 实际注入时间的人 |
 | :--- | :--- | :--- |
