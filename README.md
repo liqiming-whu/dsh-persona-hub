@@ -38,13 +38,13 @@
   </tr>
   <tr>
     <td align="center">
-      <img src="./docs/images/panel-xiaojingyu.png" alt="小鲸鱼面板：激活态 + 人设图鉴 + 会话统计" width="220" />
+      <img src="./docs/images/panel-xiaojingyu.jpg" alt="小鲸鱼面板：激活态 + 人设图鉴 + 会话统计" width="220" />
     </td>
     <td align="center">
-      <img src="./docs/images/panel-hajimi.png" alt="哈基米面板：预览态 + 人设图鉴 + 会话统计" width="220" />
+      <img src="./docs/images/panel-hajimi.jpg" alt="哈基米面板：预览态 + 人设图鉴 + 会话统计" width="220" />
     </td>
     <td align="center">
-      <img src="./docs/images/panel-xiaoke.png" alt="小克面板：预览态 + 人设图鉴 + 会话统计" width="220" />
+      <img src="./docs/images/panel-xiaoke.jpg" alt="小克面板：预览态 + 人设图鉴 + 会话统计" width="220" />
     </td>
   </tr>
 </table>
@@ -84,7 +84,7 @@
       <img src="./assets/hajimi-persona/anime.jpg" alt="哈基米二次元形象" width="200" />
     </td>
     <td align="center">
-      <img src="./assets/xiaoke-persona/realistic.png" alt="小克写实形象" width="200" />
+      <img src="./assets/xiaoke-persona/realistic.jpg" alt="小克写实形象" width="200" />
     </td>
     <td align="center">
       <img src="./assets/xiaoke-persona/anime.jpg" alt="小克二次元形象" width="200" />
@@ -96,7 +96,7 @@
   </tr>
   <tr>
     <td align="center" colspan="2">
-      <img src="./assets/xiaojingyu-persona/realistic.png" alt="小鲸鱼写实形象" width="240" />
+      <img src="./assets/xiaojingyu-persona/realistic.jpg" alt="小鲸鱼写实形象" width="240" />
     </td>
     <td align="center" colspan="2">
       <img src="./assets/xiaojingyu-persona/anime.jpg" alt="小鲸鱼二次元形象" width="240" />
@@ -138,11 +138,11 @@
 
 ### 1. 从本仓库安装
 
-在 DSH 的「插件 → 添加插件」中粘贴 [Release 安装包链接](https://github.com/liqiming-whu/dsh-persona-hub/releases/download/v1.6.0/dsh-persona-hub-1.6.0.tgz)，无需在目标机构建。也可以用命令行安装：
+在 DSH 的「插件 → 添加插件」中粘贴 [Release 安装包链接](https://github.com/liqiming-whu/dsh-persona-hub/releases/download/v1.7.3/dsh-persona-hub-1.7.3.tgz)，无需在目标机构建。也可以用命令行安装：
 
 ```powershell
 # 桌面应用（profile 名为 desktop；`dsh web` 则为 web）
-dsh plugin --profile desktop add https://github.com/liqiming-whu/dsh-persona-hub/releases/download/v1.6.0/dsh-persona-hub-1.6.0.tgz
+dsh plugin --profile desktop add https://github.com/liqiming-whu/dsh-persona-hub/releases/download/v1.7.3/dsh-persona-hub-1.7.3.tgz
 ```
 
 如果 pnpm 要求确认，核对来源后只批准该安装包，不必关闭全局校验。
@@ -162,6 +162,8 @@ pnpm pack
 - **右侧栏**：原生标签页提供当前会话的人设图鉴与详情，支持拖动分隔条调宽及全屏。
 - **设置页 → 人设控制台**：可以隐藏左侧栏角色卡，或将卡片设为自适应／固定宽度（固定宽度不会撑宽侧栏）。默认人设只影响未单独绑定的会话；隐藏卡片不影响顶栏入口。
 
+- **dsh-go**：状态条「人设」打开当前会话的切换面板。全局默认和参考图偏好在「人设设置」中修改。
+
 > 安装或升级后，若插件管理器提示需要重启，请重启 DSH；已经应用但界面还没更新时，刷新页面即可。
 
 ---
@@ -172,7 +174,7 @@ pnpm pack
 
 1. 在 `~/.dsh/personas/` 下新建以 `-persona` 结尾的目录（例如 `my-persona`）。
 2. 放入 `plugin.json` 与 `AGENTS.md`（也兼容 `rules/AGENTS.md`）。
-3. 在同目录放入图片：`logo.jpg` / `logo.png` / `logo.svg`，`realistic.jpg|png`，`secondary.jpg|png` 或 `anime.jpg|png`。
+3. 在同目录放入 `logo.jpg` 或 `logo.svg`、`realistic.jpg`，以及可选的 `secondary.jpg` 或 `anime.jpg`。PNG 位图先转换成 JPG。
 4. 在设置页开启「自动扫描外部人设插件目录」。
 
 `AGENTS.md` 里请用 `{{REALISTIC_IMAGE_PATH}}` 与 `{{SECONDARY_IMAGE_PATH}}` 引用参考图，插件会在注入时解析为本机真实绝对路径。
@@ -188,6 +190,6 @@ pnpm pack
 
 ## 📜 致谢与图片来源
 
-- 二次元成年版角色立绘源自开源项目 [shuaizenge/ai-girls](https://github.com/shuaizenge/ai-girls)（原作者：[@zipzippipe](https://www.pixiv.net/artworks/148186519)）。
-- 写实形象参考图为个人使用素材，仅随插件本地分发，不单独授权转用。
-
+- **哈基米与小克**的参考图沿用 Antigravity Plugins 的同名人设。二次元立绘出自 ZipZipPipe 的《AI娘化》，由 ai-girls 收录，使用时须署名，限非商业用途。
+- **小鲸鱼（DeepSeek）**的二次元形象由 ZipZipPipe 基于上善无形创作的鲸鱼娘改编。随插件提供的立绘和预览经过缩放及 JPG 压缩，适用 **[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans)**。使用时须保留两位作者的署名，限非商业用途，演绎作品须按相同许可共享。
+- **写实参考图**随插件提供，供个人使用。插件代码采用 MIT，图片按各自的使用条件提供。

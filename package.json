@@ -1,6 +1,6 @@
 {
   "name": "dsh-persona-hub",
-  "version": "1.6.0",
+  "version": "1.7.3",
   "description": "人设控制台 (Persona Console) for DeepSeek Harness — per-session persona binding, a conversation header picker, a configurable sidebar card, three built-in personas, and external *-persona discovery.",
   "homepage": "https://github.com/liqiming-whu/dsh-persona-hub#readme",
   "engines": {
@@ -97,5 +97,43 @@
     "typescript": "^5.7.0"
   },
   "packageManager": "pnpm@11.19.0",
-  "license": "MIT"
+  "license": "MIT",
+  "dshGo": {
+    "v": 1,
+    "title": {
+      "zh": "人设控制台",
+      "en": "Persona Hub"
+    },
+    "icon": "user",
+    "assets": "assets",
+    "contributes": {
+      "composer.strip": [
+        {
+          "id": "persona",
+          "icon": "user",
+          "panel": "personas"
+        }
+      ],
+      "panels": [
+        {
+          "id": "personas",
+          "title": "人设",
+          "icon": "user",
+          "placement": [
+            "session.tab",
+            "features"
+          ]
+        },
+        {
+          "id": "persona-settings",
+          "title": "人设设置",
+          "icon": "settings",
+          "placement": [
+            "plugin",
+            "features"
+          ]
+        }
+      ]
+    }
+  }
 }

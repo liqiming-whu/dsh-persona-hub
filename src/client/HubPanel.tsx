@@ -405,7 +405,7 @@ export function HubPanel({
                 当前未激活任何专属人设插件（默认助手模式）
               </div>
               <div style={{ fontSize: 12, color: DSH_TOKENS.textSecondary }}>
-                目前以 DSH 标准助手身份运行中。你可以点击下方「已安装人设图鉴」预览并一键开启哈基米、小克、小鲸鱼或林知微~
+                目前以 DSH 标准助手身份运行中。可以在下方「已安装人设图鉴」预览并启用人设。
               </div>
             </div>
           </div>

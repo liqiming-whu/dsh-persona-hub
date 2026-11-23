@@ -8,7 +8,6 @@ import type { TimeInjector } from './time.ts'
 
 interface LiveSession {
   readonly id: string
-  snapshotEvents(): readonly { readonly type: string }[]
 }
 
 function isSessionId(value: unknown): value is string {
@@ -32,14 +31,6 @@ function sessionForPrompt(assembly: AssembleContext): LiveSession | undefined {
   return (agent === undefined || agent === scope) && isSessionId(scope?.id) && session?.id === scope.id
     ? session
     : undefined
-}
-
-function countUserTurns(session: LiveSession | undefined): number {
-  let count = 0
-  for (const event of session?.snapshotEvents() ?? []) {
-    if (event.type === 'user/message') count++
-  }
-  return count
 }
 
 type RawConfig = Record<string, unknown>
@@ -151,7 +142,7 @@ interface HostStateOptions {
   timeInjector: TimeInjector
 }
 
-export function registerPersonaState(ctx: Context, options: HostStateOptions): void {
+export function registerPersonaState(ctx: Context, options: HostStateOptions) {
   const { readSettings, readBindings, sectionOrder, timeInjector } = options
 
   function personaFor(sessionId: string | null): string | null {
@@ -177,14 +168,11 @@ export function registerPersonaState(ctx: Context, options: HostStateOptions): v
     if (summary) return payload
 
     const usage = getDshUsageTelemetry(ctx, sessionId, now.getTime())
-    // Legacy telemetry without a session can still show activity for the latest
-    // conversation. Its counters must never enter an unscoped or different prompt.
-    const userTurns = sessionId !== null && usage.convId === sessionId ? usage.convUserTurns : 0
     void timeInjector.refresh()
     return {
       ...payload,
       usage,
-      promptPreview: renderPersonaSystemPrompt(personas, now, userTurns),
+      promptPreview: renderPersonaSystemPrompt(personas),
       time: timeInjector.report(settings, now),
     }
   }
@@ -229,7 +217,7 @@ export function registerPersonaState(ctx: Context, options: HostStateOptions): v
     return null
   })
 
-  registerMutation('/api/persona-hub/session', async ({ sessionId, personaId }) => {
+  async function setSessionPersona(sessionId: unknown, personaId: unknown) {
     if (!isSessionId(sessionId)) throw new RequestError(400, 'Invalid sessionId')
     if (personaId !== null && (typeof personaId !== 'string' || personaId.length === 0)) {
       throw new RequestError(400, 'Invalid personaId')
@@ -251,7 +239,9 @@ export function registerPersonaState(ctx: Context, options: HostStateOptions): v
     })
     notifyPromptChange(ctx)
     return sessionId
-  })
+  }
+
+  registerMutation('/api/persona-hub/session', ({ sessionId, personaId }) => setSessionPersona(sessionId, personaId))
 
   ctx.effect(() => ctx.systemPrompt.section({
     name: 'persona-hub',
@@ -262,7 +252,9 @@ export function registerPersonaState(ctx: Context, options: HostStateOptions): v
       const now = new Date()
       const personas = discoverPersonas(readSettings(), now, personaFor(session?.id ?? null))
       if (personas.activeCount === 0) return ''
-      return renderPersonaSystemPrompt(personas, now, countUserTurns(session))
+      return renderPersonaSystemPrompt(personas)
     },
   }))
+
+  return { personaFor, setSessionPersona }
 }

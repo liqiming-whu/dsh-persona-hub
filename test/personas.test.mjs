@@ -5,7 +5,6 @@ import test from 'node:test'
 import {
   buildPersonaSystemPrompt,
   discoverPersonas,
-  isLinzhiweiPeriodDay,
   localizeAssetPathRefs,
   localizePersonaWording,
   resolvePackageRoot,
@@ -82,7 +81,7 @@ test('placeholders resolve to real files that exist on this machine', () => {
 
   for (const persona of snap.allPersonas) {
     const raw = readFileSync(persona.rulesPath, 'utf-8')
-    const rendered = rewritePersonaRulesForDsh(persona, raw, 'realistic', now, 0)
+    const rendered = rewritePersonaRulesForDsh(persona, raw, 'realistic')
 
     assert.ok(!rendered.includes('{{REALISTIC_IMAGE_PATH}}'), `${persona.id} left an unfilled placeholder`)
     assert.ok(!rendered.includes('{{SECONDARY_IMAGE_PATH}}'), `${persona.id} left an unfilled placeholder`)
@@ -131,7 +130,7 @@ test('buildPersonaSystemPrompt rewrites paths and adapts DSH image generation to
     ...settings,
     activePersona: 'hajimi-persona',
   }
-  const prompt = buildPersonaSystemPrompt(hajimi, new Date('2026-11-18T05:00:00+08:00'), 4)
+  const prompt = buildPersonaSystemPrompt(hajimi, new Date('2026-11-18T05:00:00+08:00'))
   assert.ok(prompt.includes('哈基米（Hajimi）'))
   assert.ok(!prompt.includes('.gemini'))
   // The persona prompt describes the flow without naming any concrete tool.
@@ -140,8 +139,6 @@ test('buildPersonaSystemPrompt rewrites paths and adapts DSH image generation to
   for (const banned of ['codex_image_generate', 'read_image', 'arkcli-gen', 'image-generator', 'referenceImages']) {
     assert.ok(!prompt.includes(banned), `prompt must not name ${banned}`)
   }
-  // The shared DSH adaptation block must not advertise a private persona.
-  assert.ok(!prompt.includes('林知微'))
 })
 
 test('resolvePersonaAssetFile blocks path traversal and resolves real assets', () => {
@@ -151,11 +148,4 @@ test('resolvePersonaAssetFile blocks path traversal and resolves real assets', (
   const valid = resolvePersonaAssetFile(settings, 'hajimi-persona', 'realistic.jpg')
   assert.ok(valid)
   assert.equal(valid.contentType, 'image/jpeg')
-})
-
-test('isLinzhiweiPeriodDay checks 14th-20th accurately', () => {
-  assert.equal(isLinzhiweiPeriodDay(new Date('2026-11-13T12:00:00')).inPeriod, false)
-  assert.equal(isLinzhiweiPeriodDay(new Date('2026-11-14T12:00:00')).inPeriod, true)
-  assert.equal(isLinzhiweiPeriodDay(new Date('2026-11-18T12:00:00')).dayIndex, 5)
-  assert.equal(isLinzhiweiPeriodDay(new Date('2026-11-21T12:00:00')).inPeriod, false)
 })

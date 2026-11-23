@@ -64,7 +64,6 @@ const BUILTIN_ORDER: Record<string, number> = {
   'hajimi-persona': 1,
   'xiaoke-persona': 2,
   'xiaojingyu-persona': 3,
-  'linzhiwei-persona': 4,
 }
 
 export function resolvePackageRoot(): string {
@@ -98,20 +97,9 @@ function pickExistingFile(assetsDir: string, candidates: Array<string | null | u
   return null
 }
 
-export function isLinzhiweiPeriodDay(now: Date = new Date()): { inPeriod: boolean; dayIndex: number; dayOfMonth: number } {
-  const dayOfMonth = now.getDate()
-  const inPeriod = dayOfMonth >= 14 && dayOfMonth <= 20
-  return {
-    inPeriod,
-    dayIndex: inPeriod ? dayOfMonth - 13 : 0,
-    dayOfMonth,
-  }
-}
-
 export function computePersonaStatusBadge(
   dirName: string,
   preferredImageMode: ImageMode = 'realistic',
-  now: Date = new Date(),
 ): PersonaBadge {
   if (dirName === 'hajimi-persona') {
     return {
@@ -127,19 +115,6 @@ export function computePersonaStatusBadge(
       text: preferredImageMode === 'secondary'
         ? '红茶已备好 · 当前偏好二次元大小姐立绘 (ai-girls)'
         : '红茶已备好 · 代码审美与架构洁癖在线',
-    }
-  }
-  if (dirName === 'linzhiwei-persona') {
-    const period = isLinzhiweiPeriodDay(now)
-    if (period.inPeriod) {
-      return {
-        tone: 'rose',
-        text: `🌸 生理期第 ${period.dayIndex} 天 (14–20日) · 小肚子微痛撒娇模式`,
-      }
-    }
-    return {
-      tone: 'rose',
-      text: '🌸 恋人兼开发搭档在线 · 书桌暖光与生活自拍互动',
     }
   }
   if (dirName === 'xiaojingyu-persona') {
@@ -175,7 +150,6 @@ function inspectPersonaDirectory(
   source: 'builtin' | 'external',
   selection: Set<string> | string,
   preferredImageMode: ImageMode,
-  now: Date,
 ): PersonaItem | null {
   const manifest = safeReadJson(manifestPath)
   if (!manifest || !existsSync(rulesPath)) return null
@@ -209,7 +183,6 @@ function inspectPersonaDirectory(
     'realistic.jpg',
     'realistic.png',
     'realistic.webp',
-    '单人书桌自拍原图.png',
   ])
   if (!realisticFile) {
     realisticFile = nonLogoImages[0] || logoFile
@@ -222,15 +195,9 @@ function inspectPersonaDirectory(
     'secondary.jpg',
     'secondary.png',
     'secondary.webp',
-    '九宫格动态照片.png',
   ])
   if (!secondaryFile) {
     secondaryFile = nonLogoImages.find(f => f !== realisticFile) || null
-  }
-
-  let realisticLabel = '写实形象 (默认)'
-  if (realisticFile === '单人书桌自拍原图.png') {
-    realisticLabel = '单人书桌自拍 (主参考)'
   }
 
   let secondaryLabel = '二次元形象'
@@ -238,8 +205,6 @@ function inspectPersonaDirectory(
     secondaryLabel = '二次元成年版 (ai-girls)'
   } else if (secondaryFile && /^secondary\./i.test(secondaryFile)) {
     secondaryLabel = '第二参考 (辅助)'
-  } else if (secondaryFile === '九宫格动态照片.png') {
-    secondaryLabel = '九宫格动态照 (辅助参考)'
   } else if (secondaryFile) {
     secondaryLabel = secondaryFile.replace(/\.[^.]+$/, '')
   }
@@ -261,12 +226,12 @@ function inspectPersonaDirectory(
       : [],
     logoUrl: encodeImg(logoFile),
     realisticUrl: encodeImg(realisticFile),
-    realisticLabel,
+    realisticLabel: '写实形象 (默认)',
     realisticPath: realisticFile ? resolve(assetsDir, realisticFile) : null,
     secondaryUrl: encodeImg(secondaryFile),
     secondaryLabel,
     secondaryPath: secondaryFile ? resolve(assetsDir, secondaryFile) : null,
-    badge: computePersonaStatusBadge(dirName, preferredImageMode, now),
+    badge: computePersonaStatusBadge(dirName, preferredImageMode),
     assetsDir: resolve(assetsDir),
     rulesPath: resolve(rulesPath),
   }
@@ -274,7 +239,7 @@ function inspectPersonaDirectory(
 
 export function discoverPersonas(
   settings: PersonaHubSettings,
-  now: Date = new Date(),
+  _now: Date = new Date(),
   sessionPersona: string | null = null,
 ): PersonasSnapshot {
   const pkgRoot = resolvePackageRoot()
@@ -298,7 +263,6 @@ export function discoverPersonas(
           'builtin',
           selection,
           settings.preferredImageMode,
-          now,
         )
         if (item) byId.set(item.id, item)
       }
@@ -341,7 +305,6 @@ export function discoverPersonas(
             'external',
             selection,
             settings.preferredImageMode,
-            now,
           )
           if (item) byId.set(item.id, item)
         }
@@ -452,8 +415,6 @@ export function rewritePersonaRulesForDsh(
   persona: PersonaItem,
   rawMarkdown: string,
   preferredImageMode: ImageMode,
-  now: Date = new Date(),
-  sessionUserTurns = 0,
 ): string {
   let content = rawMarkdown
 
@@ -504,18 +465,6 @@ export function rewritePersonaRulesForDsh(
     '  3. 若当前会话没有可用的图像读取或生图能力，则按本角色规则中的「无可用生图工具」分支自然回应，不得声称已经生成。',
   )
 
-  if (persona.id === 'linzhiwei-persona') {
-    const period = isLinzhiweiPeriodDay(now)
-    if (period.inPeriod) {
-      dshAdaptationLines.push(
-        `- **【林知微实时生理期状态提醒】**：今天是 ${now.getMonth() + 1} 月 ${period.dayOfMonth} 日，正处于林知微每月 14–20 日的**经期第 ${period.dayIndex} 天**（当前会话已进行 ${sessionUserTurns} 轮提问）。请按照「6. 身体状态」设定，在交流与执行任务时自然融入痛经状态、小肚子疼的撒娇或随轮次加重的疲惫感。`,
-      )
-    } else {
-      dshAdaptationLines.push(
-        `- **【林知微实时生理期状态提醒】**：今天是 ${now.getMonth() + 1} 月 ${period.dayOfMonth} 日，不在每月 14–20 日经期内，身体状态舒适正常。`,
-      )
-    }
-  }
 
   return content.trimEnd() + '\n' + dshAdaptationLines.join('\n')
 }
@@ -523,16 +472,13 @@ export function rewritePersonaRulesForDsh(
 export function buildPersonaSystemPrompt(
   settings: PersonaHubSettings,
   now: Date = new Date(),
-  sessionUserTurns = 0,
 ): string {
   if (!settings.enabled) return ''
-  return renderPersonaSystemPrompt(discoverPersonas(settings, now), now, sessionUserTurns)
+  return renderPersonaSystemPrompt(discoverPersonas(settings, now))
 }
 
 export function renderPersonaSystemPrompt(
   snapshot: PersonasSnapshot,
-  now: Date,
-  sessionUserTurns: number,
 ): string {
   if (snapshot.activePersonas.length === 0) return ''
 
@@ -553,8 +499,6 @@ export function renderPersonaSystemPrompt(
           persona,
           raw,
           snapshot.preferredImageMode,
-          now,
-          sessionUserTurns,
         ),
       )
     } catch {

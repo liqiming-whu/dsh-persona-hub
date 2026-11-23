@@ -3,8 +3,7 @@ import type { PersonaHubSettings, TimeFallbackMode } from './personas.ts'
 
 /**
  * The Persona Console must never *depend* on another plugin to keep the model
-  * grounded in real time: 林知微's 14–20 日经期判定、用户问“今天几号”、任何会
-  * 落到日期的推理，都要求注入的时间始终存在。
+ * grounded in real time for questions and reasoning that depend on the current date.
   *
   * `dsh-environment-context` is therefore treated as an OPTIONAL enrichments
   * provider. When it is installed and injecting, we stay silent (no duplicate

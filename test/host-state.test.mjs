@@ -28,9 +28,17 @@ const renderPersonaPrompt = assembly => renderPrompt({
   sections: assembly.sections.filter(section => section.name === 'persona-hub'),
 })
 
-async function host(t, raw = {}, { commit = () => {}, writable = true } = {}) {
+async function host(t, raw = {}, { commit = () => {}, writable = true, native = false } = {}) {
   const ctx = new Context()
   const routes = new Map()
+  const panels = new Map()
+  const strips = new Map()
+  if (native) {
+    ctx.provide('dshGo', {
+      panel: (id, definition) => panels.set(id, definition),
+      strip: (id, data) => strips.set(id, data),
+    })
+  }
   const now = Date.now()
   const sessions = new Map([
     [sessionA, session(sessionA, 1, now - 5000)],
@@ -119,7 +127,7 @@ async function host(t, raw = {}, { commit = () => {}, writable = true } = {}) {
     return renderPersonaPrompt(await ctx.systemPrompt.assemble(scoped))
   }
   return {
-    ctx, loaderFiber, sessions, agent, assemble, request,
+    ctx, loaderFiber, sessions, agent, assemble, request, panels, strips,
     setPersona: (sessionId, personaId) => request('session', { method: 'POST', body: { sessionId, personaId } }),
     setSettings: body => request('switch', { method: 'POST', body }),
     config: () => stored,
@@ -127,6 +135,50 @@ async function host(t, raw = {}, { commit = () => {}, writable = true } = {}) {
     listReads: () => listReads,
   }
 }
+
+test('native session switch updates the panel and strip while preserving the global default', async t => {
+  const h = await host(t, { sessionPersonas: { [sessionA]: SESSION_PERSONA } }, { native: true })
+  const scope = { sessionId: sessionA }
+  const panel = h.panels.get('personas')
+  const settings = h.panels.get('persona-settings')
+  let card, defaults, strip, otherCard
+  t.after(panel.data(scope, value => { card = value }))
+  t.after(panel.data({ sessionId: sessionB }, value => { otherCard = value }))
+  t.after(settings.data(scope, value => { defaults = value }))
+  t.after(h.strips.get('persona')(scope, value => { strip = value }))
+
+  assert.equal(card.activeId, SESSION_PERSONA)
+  assert.equal(defaults.activeId, DEFAULT_PERSONA)
+  const previousImage = card.activeLogo
+  const previousStrip = strip.text
+  const result = await panel.actions.switch(scope, { value: { value: 'xiaojingyu-persona' } })
+  assert.deepEqual(Object.keys(result), ['patch'])
+  assert.equal(result.patch.activeId, 'xiaojingyu-persona')
+  assert.equal(card.activeId, result.patch.activeId)
+  assert.notEqual(card.activeLogo, previousImage)
+  assert.notEqual(strip.text, previousStrip)
+  assert.equal(h.config().sessionPersonas[sessionA], card.activeId)
+  assert.equal(h.config().activePersona ?? DEFAULT_PERSONA, DEFAULT_PERSONA)
+  assert.equal(otherCard.activeId, DEFAULT_PERSONA)
+  assert.deepEqual(active((await h.request(`status?sessionId=${sessionA}`)).body), [card.activeId])
+
+  const imageMode = await panel.actions['image-mode'](scope)
+  assert.match(imageMode.patch.activeLogo, /-secondary\.jpg$/)
+  assert.equal(card.activeLogo, imageMode.patch.activeLogo)
+  const rejected = await panel.actions.switch(scope, { value: { value: 'unknown-persona' } })
+  assert.deepEqual(Object.keys(rejected), ['patch'])
+  assert.match(rejected.patch.notice, /名册/)
+  assert.equal(card.activeId, 'xiaojingyu-persona')
+
+  await settings.actions['set-persona'](scope, { value: { value: SESSION_PERSONA } })
+  assert.equal(defaults.activeId, SESSION_PERSONA)
+  assert.equal(otherCard.activeId, SESSION_PERSONA)
+  assert.equal(card.activeId, 'xiaojingyu-persona')
+  await panel.actions['follow-default'](scope)
+  assert.equal(Object.hasOwn(h.config().sessionPersonas, sessionA), false)
+  assert.equal(card.activeId, SESSION_PERSONA)
+  assert.equal(card.boundLabel, '跟随默认')
+})
 
 test('profile config supplies sidebar defaults and accepts only adaptive or whole widths in range', () => {
   const defaults = readSettings(Config({}))
@@ -152,7 +204,7 @@ test('real prompt assembly selects only the scoped agent and defaults when no ag
   const targetEvents = t.mock.method(h.sessions.get(sessionA), 'snapshotEvents')
   const otherEvents = t.mock.method(h.sessions.get(sessionB), 'snapshotEvents')
   assert.equal(await h.assemble(sessionA), statusA.promptPreview)
-  assert.equal(targetEvents.mock.callCount(), 1)
+  assert.equal(targetEvents.mock.callCount(), 0)
   assert.equal(otherEvents.mock.callCount(), 0)
   assert.match(statusA.promptPreview, new RegExp(SESSION_PERSONA))
   assert.doesNotMatch(statusA.promptPreview, new RegExp(DEFAULT_PERSONA))

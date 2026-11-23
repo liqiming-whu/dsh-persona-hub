@@ -6,12 +6,12 @@ import '@deepseek-ai/dsh-system-prompt'
 import '@deepseek-ai/dsh-host-webserver'
 import '@deepseek-ai/dsh-settings'
 import z from '@deepseek-ai/schemastery'
+import { registerDshGo } from './dshgo.ts'
 import { registerPersonaState, replyJson } from './host-state.ts'
 import {
   buildPersonaSystemPrompt,
   computePersonaStatusBadge,
   discoverPersonas,
-  isLinzhiweiPeriodDay,
   localizeAssetPathRefs,
   localizePersonaWording,
   resolvePackageRoot,
@@ -45,7 +45,6 @@ export {
   formatUtcOffset,
   getDshUsageTelemetry,
   inspectSessionEvents,
-  isLinzhiweiPeriodDay,
   localizeAssetPathRefs,
   localizePersonaWording,
   resolvePackageRoot,
@@ -220,7 +219,7 @@ export function apply(ctx: Context, entry: Config): void {
     }),
   )
 
-  registerPersonaState(ctx, {
+  const personaState = registerPersonaState(ctx, {
     readSettings: () => readSettings(entry),
     readBindings: () => entry.sessionPersonas.get(),
     sectionOrder: entry.sectionOrder,
@@ -241,4 +240,8 @@ export function apply(ctx: Context, entry: Config): void {
       },
     }),
   )
+
+  // 手机 App（dsh-go）原生界面：状态条 + 人设面板 + 设置面板。
+  // 只在装有 dsh-go 桥接的主机上出现；网页版完全不经过这里。
+  registerDshGo(ctx, () => readSettings(entry), personaState)
 }

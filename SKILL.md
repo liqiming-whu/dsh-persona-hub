@@ -62,6 +62,8 @@ find <target-dir> -maxdepth 4 \( -name plugin.json -o -name AGENTS.md \) | sort
 
 ### 1.3 安装到外部人设目录
 
+先按第 3.3 节整理待导入目录的图片，再安装。
+
 ```bash
 mkdir -p ~/.dsh/personas
 rm -rf ~/.dsh/personas/<name>-persona
@@ -85,7 +87,7 @@ grep -nE "[A-Za-z]:\\\\|\.gemini|image-generator|GEMINI\.md|Customizations" "$D/
 | 清单文件 | `plugin.json` 有 `name`（与目录名一致最佳） | 补字段，`name` 用目录名 |
 | 角色指令 | 存在 `AGENTS.md`；若在 `rules/AGENTS.md` 也可（hub 会回落） | 无则视为不可导入 |
 | 参考图 | `AGENTS.md` 用 `{{REALISTIC_IMAGE_PATH}}` / `{{SECONDARY_IMAGE_PATH}}` | 见 3.2 替换硬编码路径 |
-| 图片实体 | `realistic.*` / `anime.*` 或自定义名（如 `单人书桌自拍原图.png`）存在于同目录 | 补图，或只在文字设定里引用 |
+| 图片实体 | 位图使用 `.jpg`，矢量图使用 `.svg`，参考图推荐 `realistic.jpg` 和 `anime.jpg` 或 `secondary.jpg` | 将 PNG 等位图转换成 JPG，并更新引用（见第 3.3 节） |
 | 绝对路径 | 无 `C:\`、无 `.gemini`、无 `image-generator` | 见 3.2 |
 
 > **已知坑**：`plugin.json` 里写 `"logo": "assets/logo.jpg"`，但 DSH 包把图片**扁平**放在根目录（没有 `assets/`）。hub 会剥掉 `assets/` 前缀再找，因此仍能正确取到 `logo.jpg`。**不要**为此改文件名。
@@ -130,6 +132,20 @@ cp -r "$SRC"/. "$DST"/
 
 **不要**写死任何本机路径；占位符由 hub 在每次提示组装时填成本机真实绝对路径。
 
+### 3.3 图片格式与转换
+
+创建、导入或移植的人设包统一使用 **JPG 位图和 SVG 矢量图**。写真、立绘和位图头像使用 `.jpg`，已有的 `.svg` 图标原样保留。PNG 输入必须实际编码成 JPG。其他位图格式也按这个规则整理。
+
+有 ImageMagick 时，可在待导入目录内逐张转换。PNG 有透明区域时用白底合成。
+
+```bash
+# 先核对目标 JPG 名称，避免覆盖同名图片。
+convert realistic.png -auto-orient -background white -alpha remove -alpha off -strip -quality 88 realistic.jpg
+identify -format '%m %wx%h\n' realistic.jpg
+```
+
+确认输出为 JPEG，再更新 `plugin.json` 的 `logo`、说明文档及指令中的旧文件名。角色指令中的参考图仍优先使用路径占位符。旧 PNG 移出待安装目录后，检查包内没有残留 PNG，也没有指向旧文件的引用。
+
 ---
 
 ## 4. 生效与验证
@@ -171,8 +187,8 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/persona-hub/switch" -H "content-type
 ~/.dsh/personas/<name>-persona/
 ├── plugin.json     # name / displayName / description / logo / suggestedPrompts
 ├── AGENTS.md       # 角色指令，参考图用 {{REALISTIC_IMAGE_PATH}}
-├── logo.jpg        # 方形头像（也可 logo.svg/png）
-├── realistic.png   # 主参考图（命名随意，Hub 会挑图；推荐固定名）
+├── logo.jpg        # 方形头像，也可使用 logo.svg
+├── realistic.jpg   # 主参考图
 └── anime.jpg       # 可选，第二参考图
 ```
 
@@ -188,6 +204,7 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/persona-hub/switch" -H "content-type
 }
 ```
 
+- 新建人设也遵循第 3.3 节的图片格式要求。
 - `suggestedPrompts` 必须是**用户会说的话**，不要写成角色自述。
 - 角色指令至少写清：身份、性格、说话风格（含口癖克制规则）、外貌与参考图用法、以及“无生图工具时如何回应”。
 
