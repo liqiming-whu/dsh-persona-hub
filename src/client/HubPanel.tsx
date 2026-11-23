@@ -1,143 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import type { ConfigForm } from '@deepseek-ai/dsh-client-ui-settings/client'
-import type {
-  ImageMode,
-  PersonaHubSettings,
-  PersonaItem,
-  PersonasSnapshot,
-  TimeFallbackMode,
-  UsageTelemetry,
-} from '../index.ts'
-
-export interface TimeReport {
-  mode: TimeFallbackMode
-  environmentContext: 'active' | 'absent' | 'unknown'
-  providesTime: boolean
-  injected: boolean
-  source: 'environment-context' | 'persona-hub' | 'none'
-  text: string
-  timeZone: string
-  detail: string
-  checkedAt: number
-}
-
-export interface HubStatusPayload {
-  ok: boolean
-  timestamp: string
-  settings: PersonaHubSettings
-  personas: PersonasSnapshot
-  usage: UsageTelemetry
-  promptPreview: string
-  time?: TimeReport
-}
-
-type Listener = () => void
-
-const WIDTH_STORAGE_KEY = 'dsh-persona-hub.drawerWidth'
-const DOCK_MODE_STORAGE_KEY = 'dsh-persona-hub.pushLayout'
-
-function readSavedWidth(): number {
-  try {
-    const raw = Number(globalThis.localStorage?.getItem(WIDTH_STORAGE_KEY))
-    if (Number.isFinite(raw) && raw >= 300 && raw <= 780) return Math.round(raw)
-  } catch {}
-  return 420
-}
-
-function readSavedPushMode(): boolean {
-  try {
-    const raw = globalThis.localStorage?.getItem(DOCK_MODE_STORAGE_KEY)
-    if (raw === '0') return false
-    if (raw === '1') return true
-  } catch {}
-  return true
-}
-
-interface SharedClientState {
-  drawerOpen: boolean
-  drawerWidth: number
-  pushLayout: boolean
-  activeSessionId: string | null
-  inputActions: any | null
-  latestStatus: HubStatusPayload | null
-}
-
-const sharedState: SharedClientState = {
-  drawerOpen: false,
-  drawerWidth: readSavedWidth(),
-  pushLayout: readSavedPushMode(),
-  activeSessionId: null,
-  inputActions: null,
-  latestStatus: null,
-}
-
-const listeners = new Set<Listener>()
-
-export function subscribeSharedState(fn: Listener): () => void {
-  listeners.add(fn)
-  return () => listeners.delete(fn)
-}
-
-export function getSharedState(): SharedClientState {
-  return sharedState
-}
-
-export function updateSharedState(patch: Partial<SharedClientState>): void {
-  if (typeof patch.drawerWidth === 'number') {
-    const clamped = Math.max(300, Math.min(780, Math.round(patch.drawerWidth)))
-    patch.drawerWidth = clamped
-    try {
-      globalThis.localStorage?.setItem(WIDTH_STORAGE_KEY, String(clamped))
-    } catch {}
-  }
-  if (typeof patch.pushLayout === 'boolean') {
-    try {
-      globalThis.localStorage?.setItem(DOCK_MODE_STORAGE_KEY, patch.pushLayout ? '1' : '0')
-    } catch {}
-  }
-  Object.assign(sharedState, patch)
-  for (const fn of listeners) {
-    try {
-      fn()
-    } catch {
-      // Ignore listener error
-    }
-  }
-}
-
-export async function fetchHubStatus(sessionId?: string | null): Promise<HubStatusPayload> {
-  const qs = sessionId ? `?sessionId=${encodeURIComponent(sessionId)}` : ''
-  const res = await fetch(`/api/persona-hub/status${qs}`, { cache: 'no-store' })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  const data = (await res.json()) as HubStatusPayload
-  updateSharedState({ latestStatus: data })
-  return data
-}
-
-export async function postHubSwitch(
-  patch: Partial<PersonaHubSettings>,
-  scope?: ConfigForm<PersonaHubSettings>,
-): Promise<HubStatusPayload> {
-  if (scope) {
-    for (const [k, v] of Object.entries(patch)) {
-      try {
-        void scope.set(k as keyof PersonaHubSettings, v as any)
-      } catch {
-        // Ignore configForm error and rely on POST /api/persona-hub/switch
-      }
-    }
-  }
-  const res = await fetch('/api/persona-hub/switch', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    cache: 'no-store',
-    body: JSON.stringify(patch),
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  const data = (await res.json()) as HubStatusPayload
-  updateSharedState({ latestStatus: data })
-  return data
-}
+import React, { useEffect, useState } from 'react'
+import type { ImageMode, PersonaItem, PersonasSnapshot, TimeFallbackMode, UsageTelemetry } from '../index.ts'
+import { personaLabel, postHubSwitch, postSessionPersona, useHubStatus } from './status.ts'
 
 /**
  * Official DSH theme tokens (verified via Theme.listTokens):
@@ -212,107 +75,68 @@ const ENVIRONMENT_LABELS: Record<string, string> = {
 }
 
 export interface HubPanelProps {
-  scope?: ConfigForm<PersonaHubSettings>
+  sessionId?: string
+  inputActions?: { captureInsertion(): unknown; insertText(text: string, anchor: unknown): boolean }
   compact?: boolean
   showAdvancedConfig?: boolean
-  onCloseDrawer?: () => void
-  showDockControls?: boolean
 }
 
 export function HubPanel({
-  scope,
+  sessionId,
+  inputActions,
   compact = false,
   showAdvancedConfig = false,
-  onCloseDrawer,
-  showDockControls = false,
 }: HubPanelProps) {
-  const [statusData, setStatusData] = useState<HubStatusPayload | null>(sharedState.latestStatus)
+  const { data: statusData, error: statusError, refresh } = useHubStatus(sessionId ?? null, true)
   const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null)
-  const [selectedImageMode, setSelectedImageMode] = useState<ImageMode>('realistic')
-  const [syncLabel, setSyncLabel] = useState('实时同步中')
+  const [saving, setSaving] = useState(false)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [showPromptPreview, setShowPromptPreview] = useState(false)
-  const [pushLayout, setPushLayout] = useState(sharedState.pushLayout)
-
-  const showToast = useCallback((msg: string) => {
-    setToastMsg(msg)
-    setTimeout(() => {
-      setToastMsg(prev => (prev === msg ? null : prev))
-    }, 2000)
-  }, [])
-
-  const refresh = useCallback(async () => {
-    setSyncLabel('同步中...')
-    try {
-      const data = await fetchHubStatus(sharedState.activeSessionId)
-      setStatusData(data)
-      if (data.settings?.preferredImageMode) {
-        setSelectedImageMode(data.settings.preferredImageMode)
-      }
-      setSyncLabel('实时同步中')
-    } catch {
-      setSyncLabel('重连中...')
-    }
-  }, [])
+  const selectedImageMode = statusData?.settings.preferredImageMode ?? 'realistic'
+  const syncLabel = saving ? '正在切换…' : statusError ? '重试' : statusData ? '实时同步中' : '同步中…'
+  const canSwitch = Boolean(statusData) && !saving && (!sessionId || statusData?.sessionAvailable === true)
 
   useEffect(() => {
-    void refresh()
-    const timer = setInterval(() => void refresh(), 5000)
-    const unsub = subscribeSharedState(() => {
-      if (sharedState.latestStatus) {
-        setStatusData(sharedState.latestStatus)
-      }
-      setPushLayout(sharedState.pushLayout)
-    })
-    return () => {
-      clearInterval(timer)
-      unsub()
-    }
-  }, [refresh])
+    if (!toastMsg) return
+    const timer = setTimeout(() => setToastMsg(null), 2400)
+    return () => clearTimeout(timer)
+  }, [toastMsg])
 
-  const handleSwitchPersona = async (personaId: string) => {
+  const showToast = setToastMsg
+  const handleSwitchPersona = async (personaId: string | null) => {
+    if (!canSwitch) return
+    setSaving(true)
     try {
-      setSyncLabel('正在切换...')
-      const data = await postHubSwitch(
-        {
-          enabled: personaId !== 'none',
-          activePersona: personaId,
-        },
-        scope,
-      )
-      setStatusData(data)
-      setSyncLabel('实时同步中')
-      if (personaId === 'none') {
-        showToast('已切回 DSH 标准助手模式 ✨')
-      } else {
-        const target = data.personas.allPersonas.find(p => p.id === personaId)
-        showToast(`已激活人设：${target?.displayName.split(' ')[0] || personaId} ✨`)
-      }
-    } catch (err) {
-      showToast(`切换失败：${String(err)}`)
-      setSyncLabel('重试')
+      const data = sessionId
+        ? await postSessionPersona(sessionId, personaId)
+        : await postHubSwitch({ enabled: personaId !== 'none', activePersona: personaId ?? 'none' })
+      setSelectedPersonaId(null)
+      if (personaId === null) showToast('本会话已恢复跟随默认人设')
+      else if (personaId === 'none') showToast(sessionId ? '本会话已停用人设' : '已停用默认人设')
+      else showToast(`${sessionId ? '本会话人设' : '默认人设'}：${personaLabel(data.personas.activePersonas[0])}`)
+    } catch {
+      showToast('切换失败，请重试')
+    } finally {
+      setSaving(false)
     }
   }
 
   const handleSwitchImageMode = async (mode: ImageMode) => {
-    setSelectedImageMode(mode)
     try {
-      const data = await postHubSwitch({ preferredImageMode: mode }, scope)
-      setStatusData(data)
+      await postHubSwitch({ preferredImageMode: mode })
       showToast(
         mode === 'realistic'
           ? '已设为默认写实参考图模式 📸'
           : '已设为第二参考图 (二次元/九宫格) 模式 🎨',
       )
     } catch {
-      // Keep local preview mode
+      showToast('参考图设置失败，请重试')
     }
   }
 
   const handleTimeMode = async (mode: TimeFallbackMode) => {
     try {
-      const data = await postHubSwitch({ timeFallback: mode }, scope)
-      setStatusData(data)
+      await postHubSwitch({ timeFallback: mode })
       showToast(
         mode === 'off'
           ? '已关闭人设控制台的时间注入 🕒'
@@ -325,19 +149,18 @@ export function HubPanel({
     }
   }
 
-  const handlePromptClick = (promptText: string) => {
-    navigator.clipboard?.writeText(promptText).catch(() => {})
-    const actions = sharedState.inputActions
-    if (actions && typeof actions.setText === 'function') {
-      try {
-        actions.setText(promptText)
-        showToast('已填入聊天输入框并复制 ✨')
+  const handlePromptClick = async (promptText: string) => {
+    try {
+      if (inputActions?.captureInsertion && inputActions.insertText?.(promptText, inputActions.captureInsertion())) {
+        void navigator.clipboard?.writeText(promptText).catch(() => {})
+        showToast('已填入当前会话输入框 ✨')
         return
-      } catch {
-        // Fallback to clipboard toast
       }
+      await navigator.clipboard.writeText(promptText)
+      showToast('已复制提问到剪贴板 ✨')
+    } catch {
+      showToast('无法填入输入框或复制提问')
     }
-    showToast('已复制唤醒词到剪贴板 ✨')
   }
 
   const personasData: PersonasSnapshot = statusData?.personas ?? {
@@ -365,7 +188,7 @@ export function HubPanel({
   }
 
   const settings = statusData?.settings
-  const timeReport: TimeReport | undefined = statusData?.time
+  const timeReport = statusData?.time
   const timeMode: TimeFallbackMode = timeReport?.mode ?? settings?.timeFallback ?? 'auto'
   const timeBadge = timeReport && !timeReport.injected && timeReport.mode !== 'off'
     ? { label: '环境上下文生效', ...TONE_STYLES.emerald }
@@ -443,37 +266,22 @@ export function HubPanel({
             color: DSH_TOKENS.textPrimary,
           }}
         >
-          <span>✨ 人设控制台</span>
+          <span>{sessionId ? '✨ 当前会话人设' : '✨ 默认人设'}</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {showDockControls && (
-            <button
-              type="button"
-              onClick={() => updateSharedState({ pushLayout: !pushLayout })}
-              title={
-                pushLayout
-                  ? '当前为【推开会话】模式（不挡聊天内容），点击可切换为悬浮模式'
-                  : '当前为【悬浮覆盖】模式，点击可切换为推开会话模式（不挡聊天内容）'
-              }
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                fontSize: 11,
-                fontWeight: 600,
-                background: pushLayout ? DSH_TOKENS.brandSoft : DSH_TOKENS.bgSurface,
-                color: DSH_TOKENS.textPrimary,
-                border: `1px solid ${pushLayout ? DSH_TOKENS.brand : DSH_TOKENS.borderStrong}`,
-                padding: '3px 8px',
-                borderRadius: 999,
-                cursor: 'pointer',
-              }}
-            >
-              <span>{pushLayout ? '📌 推开会话' : '🪟 悬浮模式'}</span>
-            </button>
+          {sessionId && statusData && (
+            statusData.sessionAvailable && statusData.sessionPersona !== null ? (
+              <button type="button" disabled={!canSwitch} onClick={() => void handleSwitchPersona(null)}
+                style={{ ...surfaceStyle, padding: '3px 8px', fontSize: 11 }}>
+                跟随默认
+              </button>
+            ) : (
+              <span style={{ color: DSH_TOKENS.textSecondary, fontSize: 11 }}>
+                {statusData.sessionAvailable ? '跟随默认' : '此会话暂不支持绑定'}
+              </span>
+            )
           )}
-
           <button
             type="button"
             onClick={() => void refresh()}
@@ -504,25 +312,6 @@ export function HubPanel({
             <span style={{ color: DSH_TOKENS.textPrimary }}>{syncLabel}</span>
           </button>
 
-          {onCloseDrawer && (
-            <button
-              type="button"
-              onClick={onCloseDrawer}
-              title="收起侧边栏中控台"
-              style={{
-                border: `1px solid ${DSH_TOKENS.borderStrong}`,
-                background: DSH_TOKENS.bgCard,
-                color: DSH_TOKENS.textPrimary,
-                borderRadius: 8,
-                padding: '3px 8px',
-                cursor: 'pointer',
-                fontSize: 12,
-                fontWeight: 700,
-              }}
-            >
-              ✕
-            </button>
-          )}
         </div>
       </div>
 

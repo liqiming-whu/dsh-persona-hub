@@ -21,6 +21,8 @@ console.log('active=',d.settings.activePersona,'scanExternalDirs=',d.settings.sc
 console.log(d.personas.allPersonas.map(p=>p.id+'/'+p.source).join(', '));"
 ```
 
+- `settings.activePersona` 是配置中的默认人设，不一定是当前会话的人设。查看具体会话时，在状态接口加上 `?sessionId=<会话ID>`，以 `personas.activePersonas` 为准。
+- 当前会话顶栏的角色名可以打开浮层，单独绑定人设或恢复「跟随默认」；`/api/persona-hub/switch` 只修改配置中的默认值。需要代用户修改会话绑定时，向 `/api/persona-hub/session` 发送 JSON `{ "sessionId": "<会话ID>", "personaId": "<人设ID>" }`（`null` 跟随默认，`"none"` 仅该会话停用）。
 - `scanExternalDirs=false` 时外部人设**不会**被发现，需要：
   ```bash
   curl -s -X POST "http://127.0.0.1:<DSH_PORT>/api/persona-hub/switch" \

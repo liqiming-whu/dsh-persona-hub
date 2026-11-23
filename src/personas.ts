@@ -23,6 +23,8 @@ export interface PersonaHubSettings {
   externalPluginsDir: string
   timeFallback?: TimeFallbackMode
   timeZone?: string
+  showSidebarCard?: boolean
+  sidebarCardWidth?: number
 }
 
 export interface PersonaBadge {
@@ -171,14 +173,16 @@ function inspectPersonaDirectory(
   manifestPath: string,
   rulesPath: string,
   source: 'builtin' | 'external',
-  activeIds: Set<string>,
+  selection: Set<string> | string,
   preferredImageMode: ImageMode,
   now: Date,
 ): PersonaItem | null {
   const manifest = safeReadJson(manifestPath)
   if (!manifest || !existsSync(rulesPath)) return null
 
-  const enabled = activeIds.has(dirName) || activeIds.has(String(manifest.name || ''))
+  const enabled = typeof selection === 'string'
+    ? dirName === selection // Session bindings target exactly one discovered ID, not a package-name alias.
+    : selection.has(dirName) || selection.has(String(manifest.name || ''))
   const manifestLogo = typeof manifest.logo === 'string'
     ? manifest.logo.replace(/^assets[/\\]/, '')
     : null
@@ -271,10 +275,11 @@ function inspectPersonaDirectory(
 export function discoverPersonas(
   settings: PersonaHubSettings,
   now: Date = new Date(),
+  sessionPersona: string | null = null,
 ): PersonasSnapshot {
   const pkgRoot = resolvePackageRoot()
   const builtinRoot = join(pkgRoot, 'assets')
-  const activeIds = settings.enabled ? parseActivePersonaIds(settings.activePersona) : new Set<string>()
+  const selection = sessionPersona ?? (settings.enabled ? parseActivePersonaIds(settings.activePersona) : new Set<string>())
   const byId = new Map<string, PersonaItem>()
 
   // 1. Load built-in personas from package assets/
@@ -291,7 +296,7 @@ export function discoverPersonas(
           join(personaDir, 'plugin.json'),
           join(personaDir, 'AGENTS.md'),
           'builtin',
-          activeIds,
+          selection,
           settings.preferredImageMode,
           now,
         )
@@ -334,7 +339,7 @@ export function discoverPersonas(
             join(pluginDir, 'plugin.json'),
             rulesCandidate,
             'external',
-            activeIds,
+            selection,
             settings.preferredImageMode,
             now,
           )
@@ -521,7 +526,14 @@ export function buildPersonaSystemPrompt(
   sessionUserTurns = 0,
 ): string {
   if (!settings.enabled) return ''
-  const snapshot = discoverPersonas(settings, now)
+  return renderPersonaSystemPrompt(discoverPersonas(settings, now), now, sessionUserTurns)
+}
+
+export function renderPersonaSystemPrompt(
+  snapshot: PersonasSnapshot,
+  now: Date,
+  sessionUserTurns: number,
+): string {
   if (snapshot.activePersonas.length === 0) return ''
 
   const blocks: string[] = []
@@ -540,7 +552,7 @@ export function buildPersonaSystemPrompt(
         rewritePersonaRulesForDsh(
           persona,
           raw,
-          settings.preferredImageMode,
+          snapshot.preferredImageMode,
           now,
           sessionUserTurns,
         ),

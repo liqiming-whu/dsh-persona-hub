@@ -172,10 +172,11 @@ export function getDshUsageTelemetry(
     return b.stats.lastTime - a.stats.lastTime
   })
 
-  const target =
-    (requestedSessionId && sorted.find(x => x.stats.id === requestedSessionId)) ||
-    sorted[0] ||
-    null
+  // Only an unscoped telemetry request may show the latest session. An exact
+  // requested ID that is no longer live has no conversation counters.
+  const target = requestedSessionId == null
+    ? sorted[0]
+    : sorted.find(x => x.stats.id === requestedSessionId)
 
   const DAY_MS = 24 * 60 * 60 * 1000
   let todaySteps = 0
@@ -190,7 +191,7 @@ export function getDshUsageTelemetry(
       }
       todaySteps += item.stats.steps
       todayImages += item.stats.imageCalls
-      if (!fallbackModel && item.stats.latestModel) {
+      if (requestedSessionId == null && !fallbackModel && item.stats.latestModel) {
         fallbackModel = item.stats.latestModel
       }
     }

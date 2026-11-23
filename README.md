@@ -138,32 +138,31 @@
 
 ### 1. 从本仓库安装
 
+在 DSH 的「插件 → 添加插件」中粘贴 [Release 安装包链接](https://github.com/liqiming-whu/dsh-persona-hub/releases/download/v1.6.0/dsh-persona-hub-1.6.0.tgz)，无需在目标机构建。也可以用命令行安装：
+
 ```powershell
 # 桌面应用（profile 名为 desktop；`dsh web` 则为 web）
-# 推荐：直接安装 Release 附件（无需在目标机构建）
-dsh plugin --profile desktop add https://github.com/liqiming-whu/dsh-persona-hub/releases/download/v1.5.6/dsh-persona-hub-1.5.6.tgz --trust-lockfile
+dsh plugin --profile desktop add https://github.com/liqiming-whu/dsh-persona-hub/releases/download/v1.6.0/dsh-persona-hub-1.6.0.tgz
 ```
 
-`--trust-lockfile` 跳过 lockfile 供应链校验，新发布不足 24 小时的版本可能触发 pnpm 的 `minimumReleaseAge` 拦截，不接受该选项时可去掉。
+如果 pnpm 要求确认，核对来源后只批准该安装包，不必关闭全局校验。
 
-> 也可以从源码安装 `github:liqiming-whu/dsh-persona-hub`，但 pnpm 默认禁止 git 依赖执行构建脚本，需要先在 profile 的 `pnpm-workspace.yaml` 里为该 commit 的完整 key 打开 `allowBuilds`（key 含 commit sha，每次升级都要改），因此推荐上面的 Release 附件方式。
-
-或先本地打包再安装（产物与 Release 附件同源）：
+或先本地构建并打包，然后在「添加插件」中选择生成的 `.tgz`：
 
 ```bash
 pnpm install
 pnpm run build
 pnpm pack
-dsh plugin --profile desktop add ./dsh-persona-hub-<version>.tgz --trust-lockfile
 ```
 
 ### 2. 首次打开
 
-- **左侧栏**：底部出现「当前启用角色」卡片，可直接点选 4 个以内的快捷人设，点「右栏 ▸」呼出面板。
-- **右侧栏**：面板以独立标签页常驻，支持拖动分隔条调宽与全屏。
-- **设置页**：左侧列表中的「人设控制台」，可查看实时注入的 System Prompt、时间注入状态与人设管理说明。
+- **会话顶栏**：角色名随会话切换。点击打开浮层，可绑定一个角色、选择「跟随默认」或仅对该会话选择「不用人设」。绑定会保存，下次打开会话时仍然生效；修改从后续模型请求起生效，不会改写已生成的消息。
+- **左侧栏**：底部角色卡提供最多 4 个快捷人设，打开会话时只切换该会话的人设，点击「右栏 ▸」可查看详情。
+- **右侧栏**：原生标签页提供当前会话的人设图鉴与详情，支持拖动分隔条调宽及全屏。
+- **设置页 → 人设控制台**：可以隐藏左侧栏角色卡，或将卡片设为自适应／固定宽度（固定宽度不会撑宽侧栏）。默认人设只影响未单独绑定的会话；隐藏卡片不影响顶栏入口。
 
-> 安装或升级插件后需要重启 DSH（`dsh web` / 桌面应用）并硬刷新页面；此后修改人设与开关设置均为即时生效。
+> 安装或升级后，若插件管理器提示需要重启，请重启 DSH；已经应用但界面还没更新时，刷新页面即可。
 
 ---
 
@@ -182,7 +181,7 @@ dsh plugin --profile desktop add ./dsh-persona-hub-<version>.tgz --trust-lockfil
 
 ## 🧩 兼容性
 
-- 面向 **DSH 0.2.x**（`peerDependencies` 声明 `>=0.2.0-rc.2 <0.3.0-0`）。
+- 需要 **DSH `0.2.2-rc.5` 或较新的 `0.2.x`**；已在桌面端 `0.2.2-rc.5` 验证会话顶栏。
 - 可选协作插件：[`dsh-environment-context`](https://github.com/liqiming-whu/dsh-environment-context)（环境上下文，缺失时自动兜底）、[`@changfenhuang/dsh-genui`](https://github.com/omdsh-dev/dsh-genui)（若要让回复里的 `dsh-ui` 卡片渲染）。
 
 ---
